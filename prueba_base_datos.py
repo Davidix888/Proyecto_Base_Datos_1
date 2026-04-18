@@ -1,26 +1,39 @@
+import getpass
+import os
+
 import psycopg
 
-# Conexión a la base de datos
-try:
-    conexion = psycopg.connect(
-        host="localhost",
-        port="5432",
-        dbname="proyecto_tarjeta_circulacion",
-        user="postgres",
-        password="Cruzita_2005"
-    )
 
-    print("Conexión exitosa a la base de datos")
+def main():
+    db_password = os.getenv("DB_PASSWORD")
 
-    cursor = conexion.cursor()
-    cursor.execute("SELECT version();")
+    if not db_password:
+        db_password = getpass.getpass("Password de PostgreSQL: ").strip()
 
-    resultado = cursor.fetchone()
-    print("Versión de PostgreSQL:", resultado[0])
+    try:
+        conexion = psycopg.connect(
+            host="localhost",
+            port="5432",
+            dbname="proyecto_tarjeta_circulacion",
+            user=os.getenv("DB_USER", "postgres"),
+            password=db_password,
+        )
 
-    cursor.close()
-    conexion.close()
-    print("Conexión cerrada")
+        print("Conexion exitosa a la base de datos")
 
-except Exception as e:
-    print("Error al conectar a la base de datos:", e)
+        cursor = conexion.cursor()
+        cursor.execute("SELECT version();")
+
+        resultado = cursor.fetchone()
+        print("Version de PostgreSQL:", resultado[0])
+
+        cursor.close()
+        conexion.close()
+        print("Conexion cerrada")
+
+    except Exception as error:
+        print("Error al conectar a la base de datos:", error)
+
+
+if __name__ == "__main__":
+    main()
