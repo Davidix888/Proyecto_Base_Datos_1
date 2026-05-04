@@ -1,57 +1,46 @@
-import getpass
-import os
-
-import psycopg
-
-
-DB_CONFIG = {
-    "host": "localhost",
-    "port": "5432",
-    "dbname": "proyecto_tarjeta_circulacion",
-    "user": os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", ""),
-}
-
-
-def obtener_conexion():
-    return psycopg.connect(**DB_CONFIG)
-
-
-def validar_login(nombre_usuario, contrasena):
-    with obtener_conexion() as conexion:
-        with conexion.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT id_usuario, rol
-                FROM usuario
-                WHERE nombre_usuario = %s AND "contraseÑa" = %s
-                """,
-                (nombre_usuario, contrasena),
-            )
-            return cursor.fetchone()
+from auth_backend import obtener_roles_registrados, validar_inicio_sesion
+from catalog_backend import (
+    obtener_colores,
+    obtener_lineas_por_modelo,
+    obtener_marcas,
+    obtener_modelos_por_marca,
+)
+from db_connection import DB_CONFIG, obtener_conexion
+from propietario_backend import registrar_propietario
+from mantenimiento_backend import (
+    actualizar_tarjeta_existente,
+    buscar_tarjeta_para_mantenimiento,
+)
+from registro_backend import obtener_registros
+from tarjeta_circulacion_backend import (
+    FECHA_EMISION_MINIMA,
+    FECHA_VENCIMIENTO_FIJA,
+    TIPOS_VEHICULO,
+    USOS_VEHICULO,
+    buscar_propietario_por_cui,
+    calcular_estado_tarjeta,
+    registrar_tarjeta_circulacion,
+)
 
 
-def main():
-    if not DB_CONFIG["password"]:
-        DB_CONFIG["password"] = getpass.getpass("Password de PostgreSQL: ").strip()
-
-    nombre_usuario = input("Usuario del sistema: ").strip()
-    contrasena = getpass.getpass("Contrasena del sistema: ").strip()
-
-    try:
-        usuario = validar_login(nombre_usuario, contrasena)
-    except psycopg.Error as error:
-        print(f"Error al consultar la base de datos: {error}")
-        return
-
-    if usuario:
-        id_usuario, rol = usuario
-        print("Login correcto")
-        print(f"ID de usuario: {id_usuario}")
-        print(f"Rol: {rol}")
-    else:
-        print("Usuario o contrasena incorrectos")
-
-
-if __name__ == "__main__":
-    main()
+__all__ = [
+    "DB_CONFIG",
+    "obtener_conexion",
+    "validar_inicio_sesion",
+    "obtener_roles_registrados",
+    "registrar_propietario",
+    "buscar_tarjeta_para_mantenimiento",
+    "actualizar_tarjeta_existente",
+    "obtener_registros",
+    "obtener_marcas",
+    "obtener_modelos_por_marca",
+    "obtener_lineas_por_modelo",
+    "obtener_colores",
+    "buscar_propietario_por_cui",
+    "FECHA_EMISION_MINIMA",
+    "FECHA_VENCIMIENTO_FIJA",
+    "TIPOS_VEHICULO",
+    "USOS_VEHICULO",
+    "calcular_estado_tarjeta",
+    "registrar_tarjeta_circulacion",
+]
